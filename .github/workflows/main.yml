@@ -1,0 +1,21 @@
+name: Laravel
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  send_notification:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get branch name
+      id: branch-name
+      run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
+    - name: Send notification
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+        -d "chat_id=${TELEGRAM_CHAT_ID}" \
+        -d "text=Branch ${{ steps.branch-name.outputs.branch }}. Comment ${{ github.event.head_commit.message }}."
